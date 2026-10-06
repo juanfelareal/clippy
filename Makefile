@@ -57,11 +57,14 @@ dmg: bundle
 	rm -rf build/dmg
 	@echo "✅ $(DMG) ($$(du -h $(DMG) | cut -f1))"
 
-# Publica el .dmg en un GitHub Release (tag v$(VERSION)).
+# Publica el .dmg en el GitHub Release v$(VERSION) con nombre fijo
+# (Clippy-mac.dmg) para que el link .../releases/latest/download/Clippy-mac.dmg
+# de la landing siempre sirva la última versión.
 release: dmg
+	cp $(DMG) build/Clippy-mac.dmg
 	gh release view v$(VERSION) >/dev/null 2>&1 \
-	  && gh release upload v$(VERSION) $(DMG) --clobber \
-	  || gh release create v$(VERSION) $(DMG) --title "Clippy $(VERSION)" --notes "Ver INSTALAR-MAC.md / windows/INSTALAR-WINDOWS.md"
+	  || gh release create v$(VERSION) --title "Clippy $(VERSION)" --notes "Descarga e instrucciones: https://juanfelareal.github.io/clippy/"
+	gh release upload v$(VERSION) build/Clippy-mac.dmg --clobber
 
 signing-cert:
 	bash scripts/signing-cert.sh

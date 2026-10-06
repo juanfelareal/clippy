@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clippy — Todo lo que copias, a un atajo</title>
+<meta name="description" content="Historial del portapapeles, capturas con anotaciones, texto de cualquier imagen, calculadora con IVA y atajos de texto. Gratis para Mac y Windows. Todo local, sin cuentas.">
+<meta property="og:title" content="Clippy — Todo lo que copias, a un atajo">
+<meta property="og:description" content="Historial del portapapeles, capturas anotables, OCR, calculadora con IVA y snippets. Gratis para Mac y Windows.">
+<meta property="og:image" content="https://juanfelareal.github.io/clippy/og.jpg">
+<meta property="og:url" content="https://juanfelareal.github.io/clippy/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0EB;
+    --paper: #FFFFFF;
+    --ink: #0D1B2A;
+    --ink-2: #3A4757;
+    --muted: #6B7685;
+    --line: #E4DDD4;
+    --green: #16a34a;
+    --green-bright: #4ADE80;
+    --green-soft: #E3F4E8;
+    --shadow: 0 1px 2px rgba(13,27,42,.04), 0 8px 24px rgba(13,27,42,.06);
+    --shadow-lg: 0 2px 4px rgba(13,27,42,.05), 0 24px 60px rgba(13,27,42,.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: Inter, -apple-system, "Segoe UI", sans-serif; background: var(--cream); color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* Nav */
+  nav { position: sticky; top: 0; z-index: 20; background: rgba(245,240,235,.85); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+  nav.scrolled { border-bottom-color: var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 19px; letter-spacing: -.5px; text-decoration: none; }
+  .brand img { width: 30px; height: 30px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; font-size: 14px; font-weight: 500; color: var(--ink-2); }
+  .nav-links a { text-decoration: none; }
+  .nav-links a:hover { color: var(--ink); }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 50px; font-weight: 600; font-size: 15px; text-decoration: none; transition: transform .15s, box-shadow .15s, background .15s; border: 1px solid transparent; white-space: nowrap; }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .btn-primary { background: var(--ink); color: #fff; box-shadow: 0 6px 18px rgba(13,27,42,.18); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(13,27,42,.24); }
+  .btn-ghost { background: var(--paper); color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .btn-sm { padding: 9px 16px; font-size: 14px; }
+
+  /* Hero */
+  .hero { padding: 84px 0 96px; position: relative; }
+  .hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px 400px at 85% 20%, rgba(74,222,128,.16), transparent 70%), radial-gradient(500px 360px at 0% 90%, rgba(13,27,42,.05), transparent 70%); pointer-events: none; }
+  .hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; position: relative; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 50px; background: var(--paper); border: 1px solid var(--line); font-size: 12px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-2); }
+  .pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
+  h1 { font-size: 72px; font-weight: 900; letter-spacing: -3px; line-height: 1.0; margin: 22px 0 22px; }
+  h1 em { font-style: normal; color: var(--green); }
+  .lead { font-size: 19px; color: var(--ink-2); max-width: 520px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+  .fine { margin-top: 16px; font-size: 13px; color: var(--muted); }
+
+  /* Mock panel */
+  .mock { background: var(--paper); border-radius: 18px; box-shadow: var(--shadow-lg); border: 1px solid rgba(13,27,42,.06); overflow: hidden; max-width: 460px; justify-self: end; width: 100%; }
+  .mock-search { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #EEE9E3; font-size: 15px; color: var(--ink); }
+  .mock-search svg { width: 16px; height: 16px; color: var(--muted); }
+  .caret { width: 1.5px; height: 18px; background: var(--green); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .mock-list { padding: 6px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; font-size: 14px; color: var(--ink-2); }
+  .row.sel { background: var(--green-soft); color: var(--ink); }
+  .row .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .k { font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .row .ic { width: 28px; height: 28px; border-radius: 7px; background: #F3EFEA; display: grid; place-items: center; flex: none; font-size: 13px; }
+  .row .thumb { background: linear-gradient(135deg, #0D1B2A, #1f3b57); }
+  .row .pin { color: var(--green); font-size: 12px; }
+  .mock-foot { display: flex; gap: 16px; padding: 10px 16px; border-top: 1px solid #EEE9E3; font-size: 11px; color: var(--muted); }
+
+  /* Sections */
+  section { padding: 100px 0; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+  h2 { font-size: 52px; font-weight: 900; letter-spacing: -2px; line-height: 1.05; max-width: 760px; }
+  .sub { margin-top: 16px; font-size: 18px; color: var(--ink-2); max-width: 620px; }
+
+  /* OS switch */
+  .switch { display: inline-flex; padding: 4px; background: var(--paper); border: 1px solid var(--line); border-radius: 50px; margin-top: 28px; }
+  .switch button { border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 600; padding: 8px 18px; border-radius: 50px; color: var(--muted); cursor: pointer; transition: background .15s, color .15s; }
+  .switch button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+
+  /* Features */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
+  .card { background: var(--paper); border-radius: 18px; padding: 28px; box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column; }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .card .emoji { font-size: 26px; margin-bottom: 18px; }
+  .card h3 { font-size: 20px; font-weight: 700; letter-spacing: -.4px; margin-bottom: 8px; }
+  .card p { font-size: 15px; color: var(--ink-2); flex: 1; }
+  .keys { display: flex; gap: 5px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+  kbd { font-family: inherit; display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 7px; background: #F6F3EF; border: 1px solid #E4DDD4; border-bottom-width: 2px; font-size: 13px; font-weight: 600; color: var(--ink); }
+  .keys span { font-size: 13px; color: var(--muted); }
+
+  /* Calculator */
+  .calc { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .calc-box { background: var(--ink); color: #fff; border-radius: 20px; padding: 10px; box-shadow: var(--shadow-lg); }
+  .calc-row { display: flex; justify-content: space-between; gap: 16px; padding: 16px 18px; border-radius: 12px; font-size: 16px; }
+  .calc-row + .calc-row { border-top: 1px solid rgba(255,255,255,.07); }
+  .calc-row code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: rgba(255,255,255,.75); }
+  .calc-row b { color: var(--green-bright); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* Install */
+  .install { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 44px; }
+  .steps { background: var(--paper); border-radius: 20px; padding: 32px; box-shadow: var(--shadow); }
+  .steps h3 { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+  .steps h3 svg { width: 22px; height: 22px; }
+  .steps .req { font-size: 13px; color: var(--muted); margin: 4px 0 22px; }
+  .steps ol { list-style: none; counter-reset: s; }
+  .steps li { counter-increment: s; position: relative; padding: 0 0 18px 42px; font-size: 15px; color: var(--ink-2); }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 26px; height: 26px; border-radius: 7px; background: var(--green-soft); color: var(--green); font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+  .steps li b { color: var(--ink); font-weight: 600; }
+  .note { margin-top: 6px; padding: 14px 16px; border-radius: 12px; background: #FBF8F4; border: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
+  .note code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; background: #fff; border: 1px solid var(--line); padding: 1px 6px; border-radius: 5px; word-break: break-all; }
+  .steps .btn { margin-top: 22px; }
+  .steps.dim { opacity: .55; }
+
+  /* Privacy band */
+  .dark { background: var(--ink); color: #fff; position: relative; overflow: hidden; }
+  .dark::before { content: ""; position: absolute; inset: 0; background: radial-gradient(700px 400px at 90% 0%, rgba(74,222,128,.14), transparent 70%); }
+  .dark .wrap { position: relative; }
+  .dark .tag { color: var(--green-bright); }
+  .dark .sub { color: rgba(255,255,255,.7); }
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(255,255,255,.08); border-radius: 18px; overflow: hidden; margin-top: 48px; }
+  .facts div { background: var(--ink); padding: 28px 24px; }
+  .facts b { display: block; font-size: 40px; font-weight: 900; letter-spacing: -1.5px; color: var(--green-bright); line-height: 1.1; }
+  .facts span { font-size: 14px; color: rgba(255,255,255,.7); }
+
+  /* FAQ */
+  .faq { max-width: 780px; margin-top: 40px; }
+  details { background: var(--paper); border-radius: 14px; padding: 0 22px; box-shadow: var(--shadow); margin-bottom: 10px; }
+  summary { cursor: pointer; list-style: none; padding: 20px 0; font-weight: 600; font-size: 16px; display: flex; justify-content: space-between; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--muted); transition: transform .2s; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { padding: 0 0 20px; color: var(--ink-2); font-size: 15px; }
+
+  footer { padding: 48px 0 56px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+  [data-os="win"] .only-mac, [data-os="mac"] .only-win { display: none; }
+
+  @media (max-width: 900px) {
+    .hero .wrap, .calc, .install { grid-template-columns: 1fr; }
+    .mock { justify-self: start; }
+    .grid { grid-template-columns: 1fr 1fr; }
+    .facts { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    .wrap { padding: 0 16px; }
+    .nav-links a:not(.btn) { display: none; }
+    .hero { padding: 48px 0 64px; }
+    h1 { font-size: 40px; letter-spacing: -1.5px; }
+    h2 { font-size: 30px; letter-spacing: -1px; }
+    .lead { font-size: 17px; }
+    section { padding: 64px 0; }
+    .grid { grid-template-columns: 1fr; }
+    .cta .btn { flex: 1 1 100%; justify-content: center; }
+    .steps { padding: 24px; }
+    .facts b { font-size: 30px; }
+  }
+</style>
+</head>
+<body data-os="mac">
+
+<nav id="nav">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="icon.png" alt="">Clippy</a>
+    <div class="nav-links">
+      <a href="#funciones">Funciones</a>
+      <a href="#instalar">Instalar</a>
+      <a href="#preguntas">Preguntas</a>
+      <a class="btn btn-primary btn-sm" href="#instalar">Descargar</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <span class="pill"><i></i>Gratis · Mac y Windows</span>
+      <h1>Todo lo que copias, <em>a un atajo.</em></h1>
+      <p class="lead">Clippy guarda todo lo que copias para volver a pegarlo cuando quieras. También hace capturas con flechas, saca el texto de cualquier imagen, calcula el IVA y escribe por ti los textos que repites.</p>
+      <div class="cta">
+        <a class="btn btn-primary dl-mac" href="https://github.com/juanfelareal/clippy/releases/latest/download/Clippy-mac.dmg">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.42-3.66zM14.1 5.84c.63-.77 1.06-1.83.94-2.89-.91.04-2.01.61-2.66 1.37-.58.67-1.09 1.75-.96 2.78 1.02.08 2.05-.52 2.68-1.26z"/></svg>
+          Descargar para Mac
+        </a>
+        <a class="btn btn-ghost dl-win" href="https://github.com/juanfelareal/clippy/releases/latest/download/Clippy-Windows.exe">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.4 4.5v7H3zm0 13 7.4 1v-7H3zm8.4 1.1L21 21v-8.5h-9.6zm0-15.2v7.1H21V3z"/></svg>
+          Descargar para Windows
+        </a>
+      </div>
+      <p class="fine"><span id="ver">Versión actual</span> · macOS 14 o más nuevo · Windows 10 y 11</p>
+    </div>
+
+    <div class="mock" aria-hidden="true">
+      <div class="mock-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        nit<span class="caret"></span>
+      </div>
+      <div class="mock-list">
+        <div class="row sel"><span class="ic">📌</span><span class="t">NIT 901.234.567-8 · Calle 10 # 43-21, Medellín</span><span class="k"><span class="only-mac">⌘1</span><span class="only-win">Ctrl+1</span></span></div>
+        <div class="row"><span class="ic">🔗</span><span class="t">https://larealmarketing.com/propuesta-q4</span><span class="k"><span class="only-mac">⌘2</span><span class="only-win">Ctrl+2</span></span></div>
+        <div class="row"><span class="ic thumb"></span><span class="t">Captura de pantalla · 1440 × 900</span><span class="k"><span class="only-mac">⌘3</span><span class="only-win">Ctrl+3</span></span></div>
+        <div class="row"><span class="ic">✉️</span><span class="t">Hola, te comparto la cotización actualizada…</span><span class="k"><span class="only-mac">⌘4</span><span class="only-win">Ctrl+4</span></span></div>
+        <div class="row"><span class="ic">🧮</span><span class="t">2.380.000</span><span class="k"><span class="only-mac">⌘5</span><span class="only-win">Ctrl+5</span></span></div>
+      </div>
+      <div class="mock-foot"><span>⏎ pegar</span><span><span class="only-mac">⌥⏎</span><span class="only-win">Alt+⏎</span> solo copiar</span><span><span class="only-mac">⌥P</span><span class="only-win">Alt+P</span> fijar</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="funciones">
+  <div class="wrap">
+    <span class="tag">Funciones</span>
+    <h2>Seis herramientas en un solo ícono.</h2>
+    <p class="sub">Vive en la barra de menú (Mac) o junto al reloj (Windows). Cada función tiene su atajo de teclado.</p>
+    <div class="switch" role="group" aria-label="Sistema operativo">
+      <button type="button" data-set-os="mac" aria-pressed="true">Mac</button>
+      <button type="button" data-set-os="win" aria-pressed="false">Windows</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="emoji">📋</div>
+        <h3>Historial del portapapeles</h3>
+        <p>Guarda tus últimos 200 textos e imágenes copiados. Busca, fija tus favoritos y pega con Enter justo donde estabas escribiendo.</p>
+        <div class="keys only-mac"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>C</kbd></div>
+        <div class="keys only-win"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>C</kbd></div>
+      </div>
+      <div class="card">
+        <div class="emoji">✏️</div>
+        <h3>Captura con anotaciones</h3>
+        <p>Selecciona una parte de la pantalla y márcala con flechas, recuadros, lápiz, texto o pixelado para tapar datos. Cópiala o guárdala.</p>
+        <div class="keys only-mac"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>1</kbd></div>
+        <div class="keys only-win"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>1</kbd></div>
+      </div>
+      <div class="card">
+        <div class="emoji">🔤</div>
+        <h3>Texto de la pantalla</h3>
+        <p>Selecciona una imagen, un PDF o un video pausado y Clippy copia el texto que hay ahí. Lee español e inglés, con tildes y eñes.</p>
+        <div class="keys only-mac"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>2</kbd></div>
+        <div class="keys only-win"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>2</kbd></div>
+      </div>
+      <div class="card">
+        <div class="emoji">🧮</div>
+        <h3>Calculadora con IVA</h3>
+        <p>Escribe las cuentas como las dirías: «1.500.000 + 19%», «iva de 100.000», «2.380.000 sin iva». Con Enter copias el resultado.</p>
+        <div class="keys only-mac"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>=</kbd></div>
+        <div class="keys only-win"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>=</kbd></div>
+      </div>
+      <div class="card">
+        <div class="emoji">⚡</div>
+        <h3>Snippets</h3>
+        <p>Crea atajos para los textos que repites. Escribes <b>//nit</b> en cualquier app y aparece tu NIT completo; lo mismo con tu dirección, tus datos bancarios o tu firma.</p>
+        <div class="keys"><kbd>/</kbd><kbd>/</kbd><span>+ tu atajo</span></div>
+      </div>
+      <div class="card">
+        <div class="emoji">🌙</div>
+        <h3>Mantener despierto</h3>
+        <p>Para presentaciones, descargas largas o videollamadas: evita que el computador se suspenda o apague la pantalla mientras esté activo.</p>
+        <div class="keys only-mac"><span>Click derecho en el 📎</span></div>
+        <div class="keys only-win"><span>Click derecho en el ícono junto al reloj</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap calc">
+    <div>
+      <span class="tag">Calculadora</span>
+      <h2>Hecha para pesos colombianos.</h2>
+      <p class="sub">Puntos para los miles y coma para los decimales, como los escribimos aquí. Entiende el IVA del 19% y los porcentajes sin que tengas que pensar en fórmulas. Ignora «$», «cop» y «pesos».</p>
+    </div>
+    <div class="calc-box" aria-label="Ejemplos de la calculadora">
+      <div class="calc-row"><code>1.500.000 + 19%</code><b>1.785.000</b></div>
+      <div class="calc-row"><code>2.380.000 sin iva</code><b>2.000.000</b></div>
+      <div class="calc-row"><code>iva de 100.000</code><b>19.000</b></div>
+      <div class="calc-row"><code>20% de 250.000</code><b>50.000</b></div>
+      <div class="calc-row"><code>(2+3)*4</code><b>20</b></div>
+    </div>
+  </div>
+</section>
+
+<section id="instalar" style="padding-top:0">
+  <div class="wrap">
+    <span class="tag">Instalar</span>
+    <h2>Dos minutos y queda lista.</h2>
+    <p class="sub">Clippy no viene de la App Store ni de Microsoft Store, así que la primera vez el sistema te pide confirmar que quieres abrirla. Es normal y pasa una sola vez.</p>
+
+    <div class="install">
+      <div class="steps" id="steps-mac">
+        <h3><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.42-3.66zM14.1 5.84c.63-.77 1.06-1.83.94-2.89-.91.04-2.01.61-2.66 1.37-.58.67-1.09 1.75-.96 2.78 1.02.08 2.05-.52 2.68-1.26z"/></svg>Mac</h3>
+        <p class="req">macOS 14 Sonoma o más nuevo · Apple Silicon e Intel</p>
+        <ol>
+          <li>Abre <b>Clippy-mac.dmg</b> y arrastra Clippy a <b>Aplicaciones</b>.</li>
+          <li>Ábrela. Si sale <i>«Apple no pudo verificar…»</i>, dale <b>Listo</b>.</li>
+          <li>Ve a <b>Ajustes del Sistema → Privacidad y seguridad</b>, baja hasta el final y dale <b>Abrir igualmente</b>.</li>
+          <li>Aparece un 📎 arriba a la derecha. La primera vez que pegues o hagas una captura, Clippy te pide los permisos de <b>Accesibilidad</b> y <b>Grabación de pantalla</b>: actívalos y vuelve a abrir Clippy.</li>
+        </ol>
+        <div class="note">¿Usas Terminal? Puedes saltarte los pasos 2 y 3 con <code>xattr -dr com.apple.quarantine /Applications/Clippy.app</code></div>
+        <a class="btn btn-primary dl-mac" href="https://github.com/juanfelareal/clippy/releases/latest/download/Clippy-mac.dmg">Descargar para Mac</a>
+      </div>
+
+      <div class="steps" id="steps-win">
+        <h3><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.4 4.5v7H3zm0 13 7.4 1v-7H3zm8.4 1.1L21 21v-8.5h-9.6zm0-15.2v7.1H21V3z"/></svg>Windows</h3>
+        <p class="req">Windows 10 u 11 · 64 bits</p>
+        <ol>
+          <li>Abre <b>Clippy-Windows.exe</b>.</li>
+          <li>Si sale <i>«Windows protegió su PC»</i>, dale <b>Más información → Ejecutar de todas formas</b>.</li>
+          <li>El instalador termina solo. Clippy aparece junto al reloj; si no lo ves, revisa la flechita <b>^</b> de íconos ocultos.</li>
+          <li>Para que arranque cuando prendas el PC: click derecho en el ícono → <b>Iniciar con Windows</b>.</li>
+        </ol>
+        <div class="note">En Windows no hay que dar permisos extra. Si un atajo no responde, otra app lo está usando: Clippy te avisa cuál.</div>
+        <a class="btn btn-primary dl-win" href="https://github.com/juanfelareal/clippy/releases/latest/download/Clippy-Windows.exe">Descargar para Windows</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dark">
+  <div class="wrap">
+    <span class="tag">Privacidad</span>
+    <h2>Lo que copias se queda en tu computador.</h2>
+    <p class="sub">Clippy no tiene servidores, no pide cuenta y no se conecta a internet. El historial se guarda en tu disco y lo puedes borrar cuando quieras. Lo que copies desde gestores de contraseñas se ignora.</p>
+    <div class="facts">
+      <div><b>0</b><span>conexiones a internet</span></div>
+      <div><b>0</b><span>cuentas o registros</span></div>
+      <div><b>200</b><span>items en el historial</span></div>
+      <div><b>$0</b><span>gratis para siempre</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="preguntas">
+  <div class="wrap">
+    <span class="tag">Preguntas</span>
+    <h2>Preguntas frecuentes</h2>
+    <div class="faq">
+      <details>
+        <summary>¿Por qué el sistema dice que no puede verificar la app?</summary>
+        <p>Porque Clippy se distribuye directamente y no por la App Store o Microsoft Store, que cobran por firmar las apps. No es un virus: el aviso sale con cualquier app que no venga de una tienda. Se confirma una sola vez y no vuelve a salir, ni siquiera cuando actualizas.</p>
+      </details>
+      <details>
+        <summary>En Mac, ¿para qué necesita Accesibilidad y Grabación de pantalla?</summary>
+        <p>Accesibilidad le permite pegar directo donde estás escribiendo y expandir tus snippets. Grabación de pantalla es para las capturas y para leer texto de la pantalla. Sin esos permisos el historial funciona igual, solo que pegas tú con ⌘V. Después de activar un permiso, cierra y vuelve a abrir Clippy.</p>
+      </details>
+      <details>
+        <summary>¿Cómo creo un snippet?</summary>
+        <p>Click en el ícono de Clippy → <b>Snippets…</b> → agrega el atajo (por ejemplo <b>nit</b>) y el texto completo. Después, en cualquier app, escribe <b>//nit</b> y Clippy lo reemplaza. Puede ser un texto de varias líneas, como una firma o los datos de la cuenta bancaria.</p>
+      </details>
+      <details>
+        <summary>¿Cómo actualizo?</summary>
+        <p>Descarga la versión nueva desde esta página e instálala encima de la anterior. Tu historial, tus snippets y tus permisos se conservan.</p>
+      </details>
+      <details>
+        <summary>¿Cómo la desinstalo?</summary>
+        <p>En Mac: cierra Clippy y bórrala de Aplicaciones; el historial está en <b>~/Library/Application Support/Clippy</b>. En Windows: Configuración → Aplicaciones → Clippy → Desinstalar.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Clippy · hecho por Juan Felipe</span>
+    <a href="https://github.com/juanfelareal/clippy/releases">Todas las versiones</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var body = document.body;
+    function setOS(os) {
+      body.setAttribute('data-os', os);
+      document.querySelectorAll('[data-set-os]').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.getAttribute('data-set-os') === os));
+      });
+      // El botón principal del hero apunta al sistema del visitante
+      var hero = document.querySelector('.hero .cta');
+      var mac = hero.querySelector('.dl-mac'), win = hero.querySelector('.dl-win');
+      var first = os === 'win' ? win : mac, second = os === 'win' ? mac : win;
+      first.className = first.className.replace('btn-ghost', 'btn-primary');
+      second.className = second.className.replace('btn-primary', 'btn-ghost');
+      hero.insertBefore(first, hero.firstChild);
+    }
+    var ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent;
+    setOS(/win/i.test(ua) ? 'win' : 'mac');
+    document.querySelectorAll('[data-set-os]').forEach(function (b) {
+      b.addEventListener('click', function () { setOS(b.getAttribute('data-set-os')); });
+    });
+
+    var nav = document.getElementById('nav');
+    window.addEventListener('scroll', function () { nav.classList.toggle('scrolled', window.scrollY > 8); }, { passive: true });
+
+    fetch('https://api.github.com/repos/juanfelareal/clippy/releases/latest')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (r) { if (r && r.tag_name) document.getElementById('ver').textContent = 'Versión ' + r.tag_name.replace(/^v/, ''); })
+      .catch(function () {});
+  })();
+</script>
+</body>
+</html>
