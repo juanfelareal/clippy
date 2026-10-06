@@ -1,0 +1,78 @@
+name: Clippy para Windows
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: windows
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: windows/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Descargar datos de OCR (tessdata_fast spa + eng)
+        run: node scripts/fetch-ocr-data.js
+
+      - name: Tests de la calculadora
+        run: node test/calculator.test.js
+
+      - name: Tests de snippets (mapeo de teclado US/español + motor)
+        run: node test/keymap.test.js
+
+      - name: Test de OCR local (español con tildes y ñ)
+        run: node test/ocr.test.js
+
+      - name: Test del helper de Windows (portapapeles, ventana activa, foco)
+        run: node test/winhelper.test.js
+
+      - name: Construir instalador
+        run: npx electron-builder --win nsis --x64 --publish never
+
+      - name: Smoke test de la app empaquetada
+        shell: pwsh
+        run: |
+          $fixture = (Resolve-Path test/fixtures/ocr-es.png).Path
+          $env:CLIPPY_OCR_SELFTEST = $fixture
+          $p = Start-Process -FilePath "dist/win-unpacked/Clippy.exe" -PassThru
+          Start-Sleep 15
+          $log = Join-Path $env:APPDATA "Clippy/clippy.log"
+          if (Test-Path $log) { Get-Content $log -Encoding UTF8 } else { Write-Host "sin log" }
+          $alive = $null -ne (Get-Process -Id $p.Id -ErrorAction SilentlyContinue)
+          Get-Process Clippy -ErrorAction SilentlyContinue | Stop-Process -Force
+          if (-not $alive) { throw "Clippy.exe se cerró antes de 15 s" }
+          if (-not (Test-Path $log)) { throw "No se creó clippy.log" }
+          $content = Get-Content $log -Raw -Encoding UTF8
+          if ($content -notmatch "Clippy started") { throw "La app no registró el arranque" }
+          if ($content -match "uncaughtException") { throw "Excepción no controlada en el arranque" }
+          if ($content -notmatch "OCR selftest: .*facturaci.n electr.nica") { throw "El OCR empaquetado no funcionó" }
+          Write-Host "Smoke test OK"
+
+      - name: Subir instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: Clippy-Windows-Installer
+          path: windows/dist/*.exe
+
+      - name: Publicar release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: windows/dist/*.exe

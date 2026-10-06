@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>Historial — Clippy</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    body { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 0; }
+    .search { display: flex; align-items: center; gap: 8px; padding: 12px 14px; }
+    .search svg { flex: none; color: var(--fg-2); }
+    .search input { flex: 1; border: 0; outline: 0; background: transparent; font-size: 15px; }
+    .search input::placeholder { color: var(--fg-3); }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
+    #list { flex: 1; overflow-y: auto; padding: 6px; }
+    .row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 6px; cursor: default; min-height: 34px; }
+    .row.sel { background: var(--accent); color: var(--accent-fg); }
+    .row .num { width: 34px; flex: none; font-size: 10px; font-weight: 500; color: var(--fg-2); }
+    .row.sel .num { color: rgba(255,255,255,0.8); }
+    .row .text { flex: 1; min-width: 0; font-size: 13px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; white-space: pre-wrap; }
+    .row .imgwrap { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .row img { max-width: 120px; max-height: 48px; border-radius: 4px; display: block; }
+    .row .dim { font-size: 11px; color: var(--fg-2); }
+    .row.sel .dim { color: rgba(255,255,255,0.8); }
+    .row .pin { flex: none; color: var(--pin); }
+    .row.sel .pin { color: rgba(255,255,255,0.85); }
+    .empty { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--fg-2); text-align: center; font-size: 13px; padding: 20px; }
+    .empty svg { color: var(--fg-3); }
+    footer { display: flex; align-items: center; gap: 12px; padding: 8px 14px; }
+    footer .count { margin-left: auto; font-size: 11px; color: var(--fg-2); }
+  </style>
+</head>
+<body>
+  <div class="search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="text" placeholder="Buscar en el historial..." autocomplete="off" spellcheck="false">
+  </div>
+  <hr>
+  <div id="list" role="listbox"></div>
+  <div id="empty" class="empty">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4.5V3h6v1.5"/></svg>
+    <div id="emptyText"></div>
+  </div>
+  <hr>
+  <footer>
+    <span class="hint"><kbd>Enter</kbd>pegar</span>
+    <span class="hint"><kbd>Alt+Enter</kbd>copiar</span>
+    <span class="hint"><kbd>Alt+P</kbd>pin</span>
+    <span class="hint"><kbd>Alt+⌫</kbd>borrar</span>
+    <span class="count" id="count">0</span>
+  </footer>
+  <script src="history.js"></script>
+</body>
+</html>

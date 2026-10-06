@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>Clippy</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    html, body { background: transparent !important; }
+    body { display: flex; align-items: center; justify-content: center; height: 100%; }
+    .pill {
+      padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 600;
+      background: rgba(250, 250, 250, 0.94); color: #1c1c1e; border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.18); opacity: 0; transform: translateY(-4px);
+      transition: opacity 150ms ease, transform 150ms ease; max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    @media (prefers-color-scheme: dark) { .pill { background: rgba(44, 44, 46, 0.94); color: #f2f2f7; border-color: rgba(255,255,255,0.1); } }
+    .pill.on { opacity: 1; transform: none; }
+    .pill.out { opacity: 0; transition-duration: 300ms; }
+  </style>
+</head>
+<body>
+  <div id="pill" class="pill"></div>
+  <script src="hud.js"></script>
+</body>
+</html>

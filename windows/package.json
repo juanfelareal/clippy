@@ -1,0 +1,100 @@
+{
+  "name": "clippy-windows",
+  "productName": "Clippy",
+  "version": "1.1.0",
+  "description": "Suite de utilidades para Windows: historial del portapapeles, capturas anotables, OCR, calculadora natural, snippets y mantener despierto.",
+  "author": "Juan Felipe León",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "icons": "electron scripts/make-icons.js",
+    "fetch-ocr": "node scripts/fetch-ocr-data.js",
+    "test": "node test/calculator.test.js && node test/keymap.test.js",
+    "test:ocr": "node test/ocr.test.js",
+    "dist:win": "electron-builder --win nsis --x64 --publish never"
+  },
+  "dependencies": {
+    "tesseract.js": "7.0.0",
+    "uiohook-napi": "^1.5.5"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.juanfe.clippy",
+    "productName": "Clippy",
+    "copyright": "Juan Felipe León",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json",
+      "!node_modules/tesseract.js-core/*.wasm.js",
+      "!node_modules/tesseract.js-core/*-lstm.{js,wasm}",
+      "!node_modules/tesseract.js-core/*.asm.js"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/tessdata",
+        "to": "tessdata",
+        "filter": [
+          "*.traineddata"
+        ]
+      }
+    ],
+    "asarUnpack": [
+      "node_modules/uiohook-napi/**",
+      "node_modules/tesseract.js/**",
+      "node_modules/tesseract.js-core/**",
+      "node_modules/wasm-feature-detect/**",
+      "node_modules/is-url/**",
+      "node_modules/bmp-js/**",
+      "node_modules/regenerator-runtime/**",
+      "node_modules/zlibjs/**",
+      "node_modules/idb-keyval/**",
+      "node_modules/node-fetch/**",
+      "node_modules/whatwg-url/**",
+      "node_modules/tr46/**",
+      "node_modules/webidl-conversions/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Clippy-Windows.${ext}",
+      "files": [
+        "!node_modules/uiohook-napi/prebuilds/{darwin,linux}-*/**",
+        "!node_modules/uiohook-napi/prebuilds/win32-arm64/**"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Clippy",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "target": "dir",
+      "icon": "build/icon.png"
+    },
+    "npmRebuild": false
+  }
+}

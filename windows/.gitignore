@@ -1,0 +1,4 @@
+node_modules/
+dist/
+resources/tessdata/
+.DS_Store

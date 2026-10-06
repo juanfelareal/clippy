@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>Captura — Clippy</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    body { display: flex; flex-direction: column; }
+    .toolbar { display: flex; align-items: center; gap: 14px; padding: 8px 12px; border-bottom: 1px solid var(--line); flex: none; height: 52px; }
+    .group { display: flex; align-items: center; gap: 4px; }
+    .sep { width: 1px; height: 20px; background: var(--line); }
+    .tool { width: 32px; height: 28px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--fg); }
+    .tool:hover { background: var(--chip); }
+    .tool.on { background: var(--accent-soft); color: var(--accent); }
+    .swatch { width: 18px; height: 18px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: 0 0 0 2px rgba(127,127,127,0.25); margin: 0 2px; }
+    .swatch.on { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+    .stroke { width: 22px; height: 22px; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+    .stroke span { display: block; border-radius: 50%; background: var(--fg); opacity: 0.35; }
+    .stroke.on span { opacity: 1; }
+    .spacer { flex: 1; }
+    .actions { display: flex; gap: 8px; }
+    #stage { flex: 1; position: relative; overflow: hidden; background: var(--bg-elev); }
+    #canvas { position: absolute; cursor: crosshair; box-shadow: 0 1px 6px rgba(0,0,0,0.18); }
+    #canvas.text { cursor: text; }
+    #textInput {
+      position: absolute; display: none; min-width: 200px; padding: 2px 6px; border-radius: 6px;
+      border: 1px solid var(--accent); background: rgba(255,255,255,0.92); outline: none; font-weight: 700; z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div class="group" id="tools"></div>
+    <div class="sep"></div>
+    <div class="group" id="colors"></div>
+    <div class="sep"></div>
+    <div class="group" id="strokes"></div>
+    <div class="spacer"></div>
+    <div class="actions">
+      <button class="btn" id="undo" title="Deshacer (Ctrl+Z)">Deshacer</button>
+      <button class="btn" id="copy" title="Copiar (Ctrl+C)">Copiar</button>
+      <button class="btn primary" id="save" title="Guardar en el Escritorio (Ctrl+S)">Guardar</button>
+    </div>
+  </div>
+  <div id="stage">
+    <canvas id="canvas"></canvas>
+    <input id="textInput" type="text" placeholder="Texto…" spellcheck="false">
+  </div>
+  <script src="editor.js"></script>
+</body>
+</html>
